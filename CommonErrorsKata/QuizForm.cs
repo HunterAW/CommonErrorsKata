@@ -21,10 +21,10 @@ namespace CommonErrorsKata
         {
             InitializeComponent();
             synchronizationContext = SynchronizationContext.Current;
-            files = System.IO.Directory.GetFiles(Environment.CurrentDirectory +  @"..\..\..\ErrorPics");
+            files = Directory.GetFiles(Environment.CurrentDirectory +  @"..\..\..\ErrorPics");
             possibleAnswers = files.Select(f => Path.GetFileName(f)?.Replace(".png", "")).ToArray();
             lstAnswers.DataSource = possibleAnswers;
-            answerQueue = new AnswerQueue<TrueFalseAnswer>(3);
+            answerQueue = new AnswerQueue<TrueFalseAnswer>(4);
             Next();
             lstAnswers.Click += LstAnswers_Click;
             StartTimer();
@@ -44,11 +44,20 @@ namespace CommonErrorsKata
 
         private void LstAnswers_Click(object sender, EventArgs e)
         {
-            time = 100;
-            var tokens = currentBaseName.Split(' ');
             //TODO:  Figure out what is a valid answer.
- 
-            answerQueue.Enqueue(new TrueFalseAnswer(true));
+            time = 100;
+
+            var selected = possibleAnswers[lstAnswers.SelectedIndex];
+            if (selected == currentBaseName)
+            {
+
+                answerQueue.Enqueue(new TrueFalseAnswer(true));
+            }
+            else
+            {
+                answerQueue.Enqueue(new TrueFalseAnswer(false));
+            }
+
             Next();
                 
         }
@@ -57,7 +66,7 @@ namespace CommonErrorsKata
         {
             if (answerQueue.Count == 3 && answerQueue.Grade >= 98)
             {
-                MessageBox.Show($"{currentBaseName}");
+                MessageBox.Show("Congratulations you've defeated me!");
                 Application.Exit();
                 return;
             }
