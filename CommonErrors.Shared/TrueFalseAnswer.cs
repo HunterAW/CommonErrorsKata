@@ -19,7 +19,6 @@
         /// </summary>
         public bool Correct { get; set; }
 
-        
-        public decimal Grade { get { return Correct ?  100 : 0; } }
+       public decimal Grade { get { return Correct ?  100 : 0; } }
     }
 }

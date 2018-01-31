@@ -1,7 +1,7 @@
 ﻿using CommonErrorsKata.Shared;
+using System;
 using System.IO;
 using System.Linq;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,21 +14,25 @@ namespace CommonErrorsKata
         private readonly string[] files;
         private readonly SynchronizationContext synchronizationContext;
         private int time = 100;
-        private string currentBaseName = null;
-        private readonly string[] possibleAnswers = null;
+        private string currentBaseName;
+        private readonly string[] possibleAnswers;
+        private bool IsRunning = true;
 
         public CommonErrorsForm()
         {
+            //TODO make the get extension dynamic
             InitializeComponent();
             synchronizationContext = SynchronizationContext.Current;
             files = Directory.GetFiles(Environment.CurrentDirectory + @"..\..\..\ErrorPics");
-            possibleAnswers = files.Select(f => Path.GetFileName(f)?.Replace(".png", "")).ToArray();
+            possibleAnswers = files.Select(f => Path.GetFileNameWithoutExtension(f)).ToArray();
             lstAnswers.DataSource = possibleAnswers;
             answerQueue = new AnswerQueue<TrueFalseAnswer>(possibleAnswers.Length);
             Next();
             lstAnswers.Click += LstAnswers_Click;
             StartTimer();
+            
         }
+        
         private async void StartTimer()
         {
             await Task.Run(() =>
@@ -39,7 +43,7 @@ namespace CommonErrorsKata
                     Thread.Sleep(50);
                 }
 
-                if (answerQueue.Count >= possibleAnswers.Length && answerQueue.Grade >= 98)
+                if (IsRunning == false)
                 {
                     Application.Exit();
                 }
@@ -47,45 +51,32 @@ namespace CommonErrorsKata
                 {
                     Message("Need to be quicker on your feet next time!  Try again...");
                 }
-
             });
         }
 
         private void LstAnswers_Click(object sender, EventArgs e)
         {
-            //TODO:  Figure out what is a valid answer.
             time = 100;
 
             var selected = possibleAnswers[lstAnswers.SelectedIndex];
-            if (selected == currentBaseName)
-            {
-                
-                answerQueue.Enqueue(new TrueFalseAnswer(true));
-            }
-            else
-            {
-                answerQueue.Enqueue(new TrueFalseAnswer(false));
-            }
+            answerQueue.Enqueue(selected == currentBaseName ? new TrueFalseAnswer(true) : new TrueFalseAnswer(false));
 
             Next();
-
         }
 
         private void Next()
         {
-
             if (answerQueue.Count >= possibleAnswers.Length && answerQueue.Grade >= 98)
             {
+                IsRunning = false;
                 MessageBox.Show("Congratulations you've defeated me!");
                 Application.Exit();
                 return;
             }
 
-
-
-            label1.Text = answerQueue.Grade.ToString() + "%";
+            label1.Text = answerQueue.Grade + "%";
             var file = files.GetRandom();
-            currentBaseName = Path.GetFileName(file)?.Replace(".png", "");
+            currentBaseName = Path.GetFileNameWithoutExtension(file);
             pbImage.ImageLocation = file;
         }
 
@@ -98,10 +89,10 @@ namespace CommonErrorsKata
         }
         public void Message(string value)
         {
-            synchronizationContext.Post(new SendOrPostCallback(x =>
+            synchronizationContext.Post(x =>
             {
                 MessageBox.Show(value);
-            }), value);
+            }, value);
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
