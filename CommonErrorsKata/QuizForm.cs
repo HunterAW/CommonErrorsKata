@@ -21,10 +21,10 @@ namespace CommonErrorsKata
         {
             InitializeComponent();
             synchronizationContext = SynchronizationContext.Current;
-            files = Directory.GetFiles(Environment.CurrentDirectory +  @"..\..\..\ErrorPics");
+            files = Directory.GetFiles(Environment.CurrentDirectory + @"..\..\..\ErrorPics");
             possibleAnswers = files.Select(f => Path.GetFileName(f)?.Replace(".png", "")).ToArray();
             lstAnswers.DataSource = possibleAnswers;
-            answerQueue = new AnswerQueue<TrueFalseAnswer>(4);
+            answerQueue = new AnswerQueue<TrueFalseAnswer>(possibleAnswers.Length);
             Next();
             lstAnswers.Click += LstAnswers_Click;
             StartTimer();
@@ -38,7 +38,16 @@ namespace CommonErrorsKata
                     UpdateProgress(time);
                     Thread.Sleep(50);
                 }
-                Message("Need to be quicker on your feet next time!  Try again...");
+
+                if (answerQueue.Count >= possibleAnswers.Length && answerQueue.Grade >= 98)
+                {
+                    Application.Exit();
+                }
+                else
+                {
+                    Message("Need to be quicker on your feet next time!  Try again...");
+                }
+
             });
         }
 
@@ -50,7 +59,7 @@ namespace CommonErrorsKata
             var selected = possibleAnswers[lstAnswers.SelectedIndex];
             if (selected == currentBaseName)
             {
-
+                
                 answerQueue.Enqueue(new TrueFalseAnswer(true));
             }
             else
@@ -59,17 +68,21 @@ namespace CommonErrorsKata
             }
 
             Next();
-                
+
         }
 
         private void Next()
         {
-            if (answerQueue.Count == possibleAnswers.Length && answerQueue.Grade >= 98)
+
+            if (answerQueue.Count >= possibleAnswers.Length && answerQueue.Grade >= 98)
             {
                 MessageBox.Show("Congratulations you've defeated me!");
                 Application.Exit();
                 return;
             }
+
+
+
             label1.Text = answerQueue.Grade.ToString() + "%";
             var file = files.GetRandom();
             currentBaseName = Path.GetFileName(file)?.Replace(".png", "");
@@ -78,13 +91,15 @@ namespace CommonErrorsKata
 
         public void UpdateProgress(int value)
         {
-            synchronizationContext.Post(new SendOrPostCallback(x => {
+            synchronizationContext.Post(new SendOrPostCallback(x =>
+            {
                 progress.Value = value;
             }), value);
         }
         public void Message(string value)
         {
-            synchronizationContext.Post(new SendOrPostCallback(x => {
+            synchronizationContext.Post(new SendOrPostCallback(x =>
+            {
                 MessageBox.Show(value);
             }), value);
         }
