@@ -64,7 +64,7 @@ namespace CommonErrorsKata
 
         private void Next()
         {
-            if (answerQueue.Count == 3 && answerQueue.Grade >= 98)
+            if (answerQueue.Count == possibleAnswers.Length && answerQueue.Grade >= 98)
             {
                 MessageBox.Show("Congratulations you've defeated me!");
                 Application.Exit();
