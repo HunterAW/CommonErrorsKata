@@ -20,7 +20,6 @@ namespace CommonErrorsKata
 
         public CommonErrorsForm()
         {
-            //TODO make the get extension dynamic
             InitializeComponent();
             synchronizationContext = SynchronizationContext.Current;
             files = Directory.GetFiles(Environment.CurrentDirectory + @"..\..\..\ErrorPics");
@@ -30,9 +29,9 @@ namespace CommonErrorsKata
             Next();
             lstAnswers.Click += LstAnswers_Click;
             StartTimer();
-            
+
         }
-        
+
         private async void StartTimer()
         {
             await Task.Run(() =>
@@ -47,10 +46,8 @@ namespace CommonErrorsKata
                 {
                     Application.Exit();
                 }
-                else
-                {
-                    Message("Need to be quicker on your feet next time!  Try again...");
-                }
+
+                Message("Need to be quicker on your feet next time!  Try again...");
             });
         }
 
@@ -59,7 +56,7 @@ namespace CommonErrorsKata
             time = 100;
 
             var selected = possibleAnswers[lstAnswers.SelectedIndex];
-            answerQueue.Enqueue(selected == currentBaseName ? new TrueFalseAnswer(true) : new TrueFalseAnswer(false));
+            answerQueue.Enqueue(new TrueFalseAnswer(selected == currentBaseName));
 
             Next();
         }
